@@ -4,29 +4,37 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public GameObject player; // Đối tượng người chơi
+    public List<GameObject> players; // Danh sách đối tượng người chơi
+    public GameObject playerPrefabs;
     public SpawnGrid spawnGrid; // Tham chiếu đến script SpawnGrid
-    public int position; // Vị trí hiện tại của người chơi trên lưới
+    private int currentPlayerIndex; // Chỉ số của người chơi đang thực hiện nước đi
     private bool setupMove; // Biến kiểm tra xem người chơi có thể di chuyển hay không
     public LayerMask traplayerMask;
+    public int numberOfPlayers; 
+    public Transform playerParent;
 
     private void Start()
     {
-        position = 0; // Khởi tạo vị trí ban đầu là 0
+        currentPlayerIndex = 0; // Khởi tạo chỉ số người chơi đầu tiên là 0
         setupMove = false; // Khởi tạo setupMove là false
         spawnGrid = GetComponent<SpawnGrid>(); // Lấy tham chiếu đến script SpawnGrid
-        SpawnPlayer(); // Đặt vị trí ban đầu của người chơi trên lưới
+        SpawnPlayers(); // Đặt vị trí ban đầu cho tất cả người chơi
     }
-    private void Update() {
+
+    private void Update()
+    {
         trapCollide();
     }
+
     private void trapCollide()
     {
-        if(CheckCollisionWithTrap(player.GetComponent<Collider2D>(), traplayerMask) && !setupMove){
+        if (CheckCollisionWithTrap(players[currentPlayerIndex].GetComponent<Collider2D>(), traplayerMask) && !setupMove)
+        {
             Debug.Log("Va chạm với trap");
             StartCoroutine(CharacterMove(-3));
         }
     }
+
     public bool CheckCollisionWithTrap(Collider2D circleCollider, LayerMask layerMask)
     {
         // Kiểm tra va chạm với các đối tượng trong layer chỉ định
@@ -36,46 +44,54 @@ public class PlayerController : MonoBehaviour
         return colliders.Length > 0;
     }
 
-    private void SpawnPlayer()
+    private void SpawnPlayers()
     {
         if (spawnGrid.Grid.Count != 0 && !setupMove)
         {
-            player.transform.position = spawnGrid.Grid[0].transform.position; // Đặt vị trí ban đầu của người chơi là vị trí đầu tiên trên lưới
+            for (int i = 0; i < numberOfPlayers; i++)
+            {
+                GameObject player = Instantiate(playerPrefabs, new Vector3(0,0),Quaternion.identity, playerParent);
+                players.Add(player);
+                // Kiểm tra xem danh sách các ô trên lưới có đủ để đặt người chơi không
+                player.transform.position = spawnGrid.Grid[0].transform.position; // Đặt vị trí ban đầu của người chơi
+                player.GetComponent<PlayerData>().position = i; // Cập nhật vị trí của người chơi trong PlayerDatad
+            }
+
             setupMove = true; // Đánh dấu setupMove là true để ngăn việc đặt vị trí ban đầu nhiều lần
         }
     }
-    
 
     public IEnumerator CharacterMove(int step)
     {
         setupMove = true; // Đánh dấu setupMove là true để ngăn việc di chuyển trong quá trình di chuyển hiện tại
-        int nextPosition = position + step; // Tính toán vị trí tiếp theo của người chơi
+        int nextPosition = players[currentPlayerIndex].GetComponent<PlayerData>().position + step; // Tính toán vị trí tiếp theo của người chơi
 
         if (nextPosition < spawnGrid.Grid.Count)
         {
             Vector3 targetPosition = spawnGrid.Grid[nextPosition].transform.position; // Vị trí đích của người chơi là vị trí tiếp theo trên lưới
 
-            while (player.transform.position != targetPosition)
+            while (players[currentPlayerIndex].transform.position != targetPosition)
             {
-                player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, 5f * Time.deltaTime); // Di chuyển người chơi từ vị trí hiện tại đến vị trí đích
+                players[currentPlayerIndex].transform.position = Vector3.MoveTowards(players[currentPlayerIndex].transform.position, targetPosition, 5f * Time.deltaTime); // Di chuyển người chơi từ vị trí hiện tại đến vị trí đích
                 yield return null;
             }
 
-            position = nextPosition; // Cập nhật vị trí hiện tại của người chơi
+            players[currentPlayerIndex].GetComponent<PlayerData>().position = nextPosition; // Cập nhật vị trí hiện tại của người chơi
         }
         else if (nextPosition >= spawnGrid.Grid.Count)
         {
             Vector3 targetPosition = spawnGrid.Grid[(int)(Mathf.Round((float)nextPosition / 10) * 10) - 1].transform.position; // Vị trí đích của người chơi là vị trí cuối cùng trên lưới
 
-            while (player.transform.position != targetPosition)
+            while (players[currentPlayerIndex].transform.position != targetPosition)
             {
-                player.transform.position = Vector3.MoveTowards(player.transform.position, targetPosition, 5f * Time.deltaTime); // Di chuyển người chơi từ vị trí hiện tại đến vị trí đích
+                players[currentPlayerIndex].transform.position = Vector3.MoveTowards(players[currentPlayerIndex].transform.position, targetPosition, 5f * Time.deltaTime); // Di chuyển người chơi từ vị trí hiện tại đến vị trí đích
                 yield return null;
             }
 
-            position = nextPosition; // Cập nhật vị trí hiện tại của người chơi
+            players[currentPlayerIndex].GetComponent<PlayerData>().position = nextPosition; // Cập nhật vị trí hiện tại của người chơi
         }
 
+        currentPlayerIndex = (currentPlayerIndex + 1) % players.Count; // Chuyển lượt cho người chơi tiếp theo trong danh sách
         setupMove = false; // Đánh dấu setupMove là false khi di chuyển đã kết thúc
     }
 }

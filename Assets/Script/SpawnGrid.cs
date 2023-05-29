@@ -16,7 +16,7 @@ public class SpawnGrid : MonoBehaviour
     private float startX;
     private float startY;
 
-    [Header("Tạo bẫy và các ô phúc lợi")]
+    [Header("Tạo bẫy")]
     public GameObject TrapPrefabs;
     public bool checkTrap;
     public int randomPos;
@@ -27,6 +27,9 @@ public class SpawnGrid : MonoBehaviour
     public Transform trapPos;
     public Color32 TrapColor;
 
+    [Header("Tạo ô tăng phúc")]
+    public GameObject boostPrefabs;
+    
     
     private void Start()
     {
