@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     public GameObject playerPrefab;
     public SpawnGrid spawnGrid;
     public int currentPlayerIndex;
-    private bool setupMove;
+    public bool setupMove;
     public LayerMask trapLayerMask;
     public LayerMask boostLayerMask;
     public Transform playerParent;
@@ -18,7 +18,6 @@ public class PlayerController : MonoBehaviour
         currentPlayerIndex = 0;
         setupMove = false;
         spawnGrid = GetComponent<SpawnGrid>();
-        SpawnPlayers();
     }
 
     private void Update()
@@ -58,7 +57,7 @@ public class PlayerController : MonoBehaviour
         return colliders.Length > 0;
     }
 
-    private void SpawnPlayers()
+    public void SpawnPlayers()
     {
         if (spawnGrid.Grid.Count != 0 && !setupMove)
         {
@@ -101,8 +100,14 @@ public class PlayerController : MonoBehaviour
                 players[currentPlayerIndex].transform.position = Vector3.MoveTowards(players[currentPlayerIndex].transform.position, targetPosition, 5f * Time.deltaTime);
                 yield return null;
             }
+            players.RemoveAt(currentPlayerIndex);
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
+
         }
-        
+        GameController.DrawCard = false;
+        Time.timeScale = 0f;
+        yield return new WaitUntil(() => GameController.DrawCard);
+        Time.timeScale = 1f;
         setupMove = false;
         Debug.Log("Chạy Trap Check");
         Boost_TrapCollide();

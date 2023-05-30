@@ -65,26 +65,38 @@ public class SpawnGrid : MonoBehaviour
         trapGenerate();
     }
     public void trapGenerate(){
-        for(int i = 0; i < trapNumber; i++) {
-            Debug.Log("Start trap rồi nè");
-            trapPos = Grid[Random.Range(1, numberOfGrid - 1)].transform;
-            GameObject trapObj = Instantiate(TrapPrefabs, trapPos.position, Quaternion.identity, trapParent);
-            Trap.Add(trapObj);
-            SpriteRenderer trapSprite = trapObj.GetComponent<SpriteRenderer>();
-            trapSprite.color = TrapColor;
-            trapSprite.sortingOrder = 2;
+        checkTrap = true;
+        Trap_randomPos = Random.Range(numberOfGrid / 2, numberOfGrid - 1);
+        // Kiểm tra xem vị trí boost_randomPos có trùng với bất kỳ vị trí trap nào không
+        while (TrapPosition.Contains(Boost_randomPos) && TrapPosition.Count != 0)
+        {
+            Boost_randomPos = Random.Range(numberOfGrid / 2, numberOfGrid - 1);
         }
+        trapPos = Grid[Trap_randomPos].transform;
+        TrapPosition.Add(Trap_randomPos);
+        GameObject trapObj = Instantiate(TrapPrefabs, trapPos.position, Quaternion.identity, trapParent);
+        Trap.Add(trapObj);
+        SpriteRenderer trapSprite = trapObj.GetComponent<SpriteRenderer>();
+        trapSprite.color = TrapColor;
+        trapSprite.sortingOrder = 2;
     }
     public void boostGenerate(){
-        for(int i = 0; i < boostNumber; i++) {
-            Debug.Log("Start boost rồi nè");
-            boostPos = Grid[Random.Range(1, numberOfGrid - 1)].transform;
-            GameObject boostObj = Instantiate(TrapPrefabs, trapPos.position, Quaternion.identity, trapParent);
-            boost.Add(boostObj);
-            SpriteRenderer trapSprite = boostObj.GetComponent<SpriteRenderer>();
-            trapSprite.color = boostColor;
-            trapSprite.sortingOrder = 2;
+        checkBoost = true;
+        Boost_randomPos = Random.Range(1, ((numberOfGrid/2) - 3));
+        
+        // Kiểm tra xem vị trí boost_randomPos có trùng với bất kỳ vị trí trap nào không
+        while (boostPosition.Contains(Boost_randomPos) && TrapPosition.Count != 0)
+        {
+            Boost_randomPos = Random.Range(10, 29);
         }
+        
+        boostPos = Grid[Boost_randomPos].transform;
+        boostPosition.Add(Boost_randomPos);
+        GameObject boostObj = Instantiate(boostPrefabs, boostPos.position, Quaternion.identity, boostParent);
+        boost.Add(boostObj);
+        SpriteRenderer boostSprite = boostObj.GetComponent<SpriteRenderer>();
+        boostSprite.color = boostColor;
+        boostSprite.sortingOrder = 2;
     }
     IEnumerator MapSetup(){
         for (int i = 0; i < numberOfLine; i++)
@@ -103,43 +115,13 @@ public class SpawnGrid : MonoBehaviour
         }
         trapNumber = Random.Range(trapNumber, trapNumber + 3);
         for(int i = 0; i < trapNumber; i++) {
-            checkTrap = true;
-            Trap_randomPos = Random.Range(10, numberOfGrid - 1);
-            // Kiểm tra xem vị trí boost_randomPos có trùng với bất kỳ vị trí trap nào không
-            while (TrapPosition.Contains(Boost_randomPos) && TrapPosition.Count != 0)
-            {
-                Boost_randomPos = Random.Range(1, numberOfGrid - 1);
-            }
-            trapPos = Grid[Trap_randomPos].transform;
-            TrapPosition.Add(Trap_randomPos);
-            GameObject trapObj = Instantiate(TrapPrefabs, trapPos.position, Quaternion.identity, trapParent);
-            Trap.Add(trapObj);
-            SpriteRenderer trapSprite = trapObj.GetComponent<SpriteRenderer>();
-            trapSprite.color = TrapColor;
-            trapSprite.sortingOrder = 2;
-            trapSprite.transform.eulerAngles = new Vector3(0, 0, 90);
+            trapGenerate();
             yield return new WaitForSeconds(0.02f);
         }
 
         for (int i = 0; i < boostNumber; i++)
         {
-            checkBoost = true;
-            Boost_randomPos = Random.Range(10, numberOfGrid - 1);
-            
-            // Kiểm tra xem vị trí boost_randomPos có trùng với bất kỳ vị trí trap nào không
-            while (TrapPosition.Contains(Boost_randomPos) && TrapPosition.Count != 0)
-            {
-                Boost_randomPos = Random.Range(1, numberOfGrid - 1);
-            }
-            
-            boostPos = Grid[Boost_randomPos].transform;
-            boostPosition.Add(Boost_randomPos);
-            GameObject boostObj = Instantiate(boostPrefabs, boostPos.position, Quaternion.identity, boostParent);
-            Trap.Add(boostObj);
-            SpriteRenderer boostSprite = boostObj.GetComponent<SpriteRenderer>();
-            boostSprite.color = boostColor;
-            boostSprite.sortingOrder = 2;
-            boostSprite.transform.eulerAngles = new Vector3(0, 0, -90);
+            boostGenerate();
             yield return new WaitForSeconds(0.02f);
         }
         GameController.canPlay = true;
