@@ -19,19 +19,25 @@ public class DiceControllerUI : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0) && GameController.canPlay)
+        /* if (Input.GetMouseButtonDown(0) && GameController.canPlay)
         {
             if (!isRolling)
             {
                 StartCoroutine(RollDice());
             }
+        }*/
+    }
+    public void DiceRolling(){
+        if (GameController.diceReady)
+        {
+            StartCoroutine(RollDice());
         }
     }
-
     private IEnumerator RollDice()
     {
+        GameController.diceReady = false;
         isRolling = true;
-
+        faceAppear = 0;
         for (int i = 0; i < Random.Range(20, 30); i++)
         {
             yield return new WaitForSeconds(0.05f);
@@ -39,7 +45,7 @@ public class DiceControllerUI : MonoBehaviour
             imageDice.sprite = diceFaces[randomFaceIndex];
         }
 
-        int faceAppear = randomFaceIndex + 1;
+        faceAppear = randomFaceIndex + 1;
         isRolling = false;
         Debug.Log(randomFaceIndex);
 

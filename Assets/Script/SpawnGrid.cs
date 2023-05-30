@@ -19,7 +19,7 @@ public class SpawnGrid : MonoBehaviour
     [Header("Tạo bẫy")]
     public GameObject TrapPrefabs;
     public bool checkTrap;
-    public int randomPos;
+    public int Trap_randomPos;
     public int trapNumber;
     public List<GameObject> Trap;
     public List<int> TrapPosition;
@@ -29,7 +29,14 @@ public class SpawnGrid : MonoBehaviour
 
     [Header("Tạo ô tăng phúc")]
     public GameObject boostPrefabs;
-    
+    public bool checkBoost;
+    public int Boost_randomPos;
+    public int boostNumber;
+    public List<GameObject> boost;
+    public List<int> boostPosition;
+    public Transform boostParent;
+    public Transform boostPos;
+    public Color32 boostColor;
     
     private void Start()
     {
@@ -59,12 +66,23 @@ public class SpawnGrid : MonoBehaviour
     }
     public void trapGenerate(){
         for(int i = 0; i < trapNumber; i++) {
-            Debug.Log("Start rồi nè");
+            Debug.Log("Start trap rồi nè");
             trapPos = Grid[Random.Range(1, numberOfGrid - 1)].transform;
             GameObject trapObj = Instantiate(TrapPrefabs, trapPos.position, Quaternion.identity, trapParent);
             Trap.Add(trapObj);
             SpriteRenderer trapSprite = trapObj.GetComponent<SpriteRenderer>();
             trapSprite.color = TrapColor;
+            trapSprite.sortingOrder = 2;
+        }
+    }
+    public void boostGenerate(){
+        for(int i = 0; i < boostNumber; i++) {
+            Debug.Log("Start boost rồi nè");
+            boostPos = Grid[Random.Range(1, numberOfGrid - 1)].transform;
+            GameObject boostObj = Instantiate(TrapPrefabs, trapPos.position, Quaternion.identity, trapParent);
+            boost.Add(boostObj);
+            SpriteRenderer trapSprite = boostObj.GetComponent<SpriteRenderer>();
+            trapSprite.color = boostColor;
             trapSprite.sortingOrder = 2;
         }
     }
@@ -86,15 +104,42 @@ public class SpawnGrid : MonoBehaviour
         trapNumber = Random.Range(trapNumber, trapNumber + 3);
         for(int i = 0; i < trapNumber; i++) {
             checkTrap = true;
-            randomPos = Random.Range(1, numberOfGrid - 1);
-            trapPos = Grid[randomPos].transform;
-            TrapPosition.Add(randomPos);
+            Trap_randomPos = Random.Range(10, numberOfGrid - 1);
+            // Kiểm tra xem vị trí boost_randomPos có trùng với bất kỳ vị trí trap nào không
+            while (TrapPosition.Contains(Boost_randomPos) && TrapPosition.Count != 0)
+            {
+                Boost_randomPos = Random.Range(1, numberOfGrid - 1);
+            }
+            trapPos = Grid[Trap_randomPos].transform;
+            TrapPosition.Add(Trap_randomPos);
             GameObject trapObj = Instantiate(TrapPrefabs, trapPos.position, Quaternion.identity, trapParent);
             Trap.Add(trapObj);
             SpriteRenderer trapSprite = trapObj.GetComponent<SpriteRenderer>();
             trapSprite.color = TrapColor;
             trapSprite.sortingOrder = 2;
             trapSprite.transform.eulerAngles = new Vector3(0, 0, 90);
+            yield return new WaitForSeconds(0.02f);
+        }
+
+        for (int i = 0; i < boostNumber; i++)
+        {
+            checkBoost = true;
+            Boost_randomPos = Random.Range(10, numberOfGrid - 1);
+            
+            // Kiểm tra xem vị trí boost_randomPos có trùng với bất kỳ vị trí trap nào không
+            while (TrapPosition.Contains(Boost_randomPos) && TrapPosition.Count != 0)
+            {
+                Boost_randomPos = Random.Range(1, numberOfGrid - 1);
+            }
+            
+            boostPos = Grid[Boost_randomPos].transform;
+            boostPosition.Add(Boost_randomPos);
+            GameObject boostObj = Instantiate(boostPrefabs, boostPos.position, Quaternion.identity, boostParent);
+            Trap.Add(boostObj);
+            SpriteRenderer boostSprite = boostObj.GetComponent<SpriteRenderer>();
+            boostSprite.color = boostColor;
+            boostSprite.sortingOrder = 2;
+            boostSprite.transform.eulerAngles = new Vector3(0, 0, -90);
             yield return new WaitForSeconds(0.02f);
         }
         GameController.canPlay = true;
